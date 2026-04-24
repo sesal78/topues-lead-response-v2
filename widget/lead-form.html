@@ -1,0 +1,41 @@
+<!-- Lead Capture Widget — paste into any page. Configure the two lines below. -->
+<style>#lrf{font-family:sans-serif;max-width:420px}#lrf input,#lrf textarea{display:block;width:100%;margin:6px 0 12px;padding:8px;border:1px solid #ccc;border-radius:4px;box-sizing:border-box}#lrf button{background:#1a1a1a;color:#fff;border:none;padding:10px 24px;border-radius:4px;cursor:pointer}#lrf-msg{margin-top:10px;font-size:.9em}</style>
+<form id="lrf">
+  <input id="lrf-name" placeholder="Name *" required>
+  <input id="lrf-email" type="email" placeholder="Email *" required>
+  <input id="lrf-phone" placeholder="Phone (optional)">
+  <textarea id="lrf-msg-text" placeholder="Message (optional)" rows="3"></textarea>
+  <button type="submit">Send</button>
+  <p id="lrf-msg"></p>
+</form>
+<script>
+const WEBHOOK_URL = 'YOUR_VERCEL_URL_HERE';   // e.g. https://your-project.vercel.app/api/webhook
+const WEBHOOK_SECRET = 'YOUR_SECRET_HERE';    // must match WEBHOOK_SECRET in Vercel env vars
+
+async function hmac(secret, msg) {
+  const enc = s => new TextEncoder().encode(s);
+  const key = await crypto.subtle.importKey('raw', enc(secret), {name:'HMAC',hash:'SHA-256'}, false, ['sign']);
+  const sig = await crypto.subtle.sign('HMAC', key, enc(msg));
+  return 'sha256=' + [...new Uint8Array(sig)].map(b => b.toString(16).padStart(2,'0')).join('');
+}
+
+document.getElementById('lrf').addEventListener('submit', async e => {
+  e.preventDefault();
+  const btn = e.target.querySelector('button');
+  const msg = document.getElementById('lrf-msg');
+  btn.disabled = true;
+  const payload = JSON.stringify({
+    name: document.getElementById('lrf-name').value,
+    email: document.getElementById('lrf-email').value,
+    phone: document.getElementById('lrf-phone').value,
+    message: document.getElementById('lrf-msg-text').value,
+    source: 'Website Form'
+  });
+  try {
+    const sig = await hmac(WEBHOOK_SECRET, payload);
+    const res = await fetch(WEBHOOK_URL, {method:'POST', headers:{'Content-Type':'application/json','x-webhook-signature':sig}, body:payload});
+    msg.textContent = res.ok ? "Thanks, we'll be in touch shortly." : 'Something went wrong. Please try again.';
+  } catch { msg.textContent = 'Something went wrong. Please try again.'; }
+  btn.disabled = false;
+});
+</script>

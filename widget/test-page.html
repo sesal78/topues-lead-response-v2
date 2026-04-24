@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lead Form Widget — Local Test Page</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      max-width: 600px;
+      margin: 60px auto;
+      padding: 0 24px;
+      color: #1a1a1a;
+    }
+    h1 { font-size: 1.4rem; margin-bottom: 4px; }
+    p.note {
+      font-size: 0.85rem;
+      color: #666;
+      margin-bottom: 32px;
+      background: #fffbe6;
+      padding: 10px 14px;
+      border-left: 3px solid #f0c040;
+    }
+    code {
+      font-size: 0.8rem;
+      background: #f4f4f4;
+      padding: 2px 6px;
+      border-radius: 3px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Lead Form Widget — Test Page</h1>
+  <p class="note">
+    <strong>Local testing instructions:</strong><br>
+    1. Start your local Vercel dev server: <code>npx vercel dev</code><br>
+    2. Edit <code>widget/lead-form.html</code> and set <code>WEBHOOK_URL</code> to
+       <code>http://localhost:3000/api/webhook</code><br>
+    3. Set <code>WEBHOOK_SECRET</code> to match the value in your local <code>.env</code><br>
+    4. Open this file in a browser (or serve with: <code>npx serve widget/</code>)<br>
+    5. Submit the form below and check the Vercel dev server logs
+  </p>
+
+  <!-- Embed the widget directly -->
+  <!-- In production clients paste only the contents of lead-form.html into their page -->
+
+  <!-- Lead Capture Widget — paste into any page. Configure the two lines below. -->
+<style>#lrf{font-family:sans-serif;max-width:420px}#lrf input,#lrf textarea{display:block;width:100%;margin:6px 0 12px;padding:8px;border:1px solid #ccc;border-radius:4px;box-sizing:border-box}#lrf button{background:#1a1a1a;color:#fff;border:none;padding:10px 24px;border-radius:4px;cursor:pointer}#lrf-msg{margin-top:10px;font-size:.9em}</style>
+<form id="lrf">
+  <input id="lrf-name" placeholder="Name *" required>
+  <input id="lrf-email" type="email" placeholder="Email *" required>
+  <input id="lrf-phone" placeholder="Phone (optional)">
+  <textarea id="lrf-msg-text" placeholder="Message (optional)" rows="3"></textarea>
+  <button type="submit">Send</button>
+  <p id="lrf-msg"></p>
+</form>
+<script>
+const WEBHOOK_URL = 'http://localhost:3000/api/webhook';   // change to your Vercel URL for production
+const WEBHOOK_SECRET = 'test-secret-change-me';            // must match WEBHOOK_SECRET in your .env
+
+async function hmac(secret, msg) {
+  const enc = s => new TextEncoder().encode(s);
+  const key = await crypto.subtle.importKey('raw', enc(secret), {name:'HMAC',hash:'SHA-256'}, false, ['sign']);
+  const sig = await crypto.subtle.sign('HMAC', key, enc(msg));
+  return 'sha256=' + [...new Uint8Array(sig)].map(b => b.toString(16).padStart(2,'0')).join('');
+}
+
+document.getElementById('lrf').addEventListener('submit', async e => {
+  e.preventDefault();
+  const btn = e.target.querySelector('button');
+  const msg = document.getElementById('lrf-msg');
+  btn.disabled = true;
+  const payload = JSON.stringify({
+    name: document.getElementById('lrf-name').value,
+    email: document.getElementById('lrf-email').value,
+    phone: document.getElementById('lrf-phone').value,
+    message: document.getElementById('lrf-msg-text').value,
+    source: 'Website Form'
+  });
+  try {
+    const sig = await hmac(WEBHOOK_SECRET, payload);
+    const res = await fetch(WEBHOOK_URL, {method:'POST', headers:{'Content-Type':'application/json','x-webhook-signature':sig}, body:payload});
+    msg.textContent = res.ok ? "Thanks, we'll be in touch shortly." : 'Something went wrong. Please try again.';
+  } catch { msg.textContent = 'Something went wrong. Please try again.'; }
+  btn.disabled = false;
+});
+</script>
+
+</body>
+</html>
