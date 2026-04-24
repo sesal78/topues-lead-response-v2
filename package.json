@@ -1,0 +1,21 @@
+{
+  "name": "topues-lead-response-v2",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Automated lead response system — Vercel Edge Function + Airtable + Resend + Twilio + Telegram",
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit",
+    "dev": "vercel dev"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.4.0",
+    "vitest": "^1.6.0",
+    "next": "^14.2.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

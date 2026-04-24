@@ -1,0 +1,13 @@
+{
+  "functions": {
+    "api/webhook.ts": {
+      "runtime": "edge"
+    }
+  },
+  "routes": [
+    {
+      "src": "/api/webhook",
+      "dest": "/api/webhook.ts"
+    }
+  ]
+}
