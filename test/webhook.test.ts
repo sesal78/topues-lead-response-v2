@@ -5,11 +5,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 const mockFetch = vi.fn();
 vi.stubGlobal("fetch", mockFetch);
 
-// ─── Mock crypto.subtle ─────────────────────────────────────────────────────
-
-const mockSign = vi.fn();
-const mockImportKey = vi.fn();
-vi.stubGlobal("crypto", { subtle: { importKey: mockImportKey, sign: mockSign } });
+// ─── Use real Web Crypto (Node 20+ has globalThis.crypto.subtle natively) ──
 
 const WEBHOOK_SECRET = "test-secret-abc123";
 
