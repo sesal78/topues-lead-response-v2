@@ -90,6 +90,7 @@ function buildSchema(timestamp: string): CreateBasePayload {
       {
         name: "Leads",
         fields: [
+          { name: "Name", type: "singleLineText" },
           { name: "Email", type: "email" },
           { name: "Phone", type: "phoneNumber" },
           { name: "Message", type: "multilineText" },
