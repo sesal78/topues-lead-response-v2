@@ -21,6 +21,13 @@ if (!API_KEY) {
   process.exit(1);
 }
 
+const WORKSPACE_ID = process.env.AIRTABLE_WORKSPACE_ID;
+if (!WORKSPACE_ID) {
+  console.error("Error: AIRTABLE_WORKSPACE_ID environment variable is not set.");
+  console.error("Sign in to airtable.com, click the workspace name in the left sidebar — the URL shows `https://airtable.com/<workspaceId>`. The ID starts with `wsp...`.");
+  process.exit(1);
+}
+
 // ─── HTTP helper ──────────────────────────────────────────────────────────────
 
 async function apiRequest<T>(
@@ -83,9 +90,10 @@ interface FieldDefinition {
   options?: Record<string, unknown>;
 }
 
-function buildSchema(timestamp: string): CreateBasePayload {
+function buildSchema(timestamp: string, workspaceId: string): CreateBasePayload {
   return {
     name: `Lead Response — ${timestamp}`,
+    workspaceId,
     tables: [
       {
         name: "Leads",
@@ -129,7 +137,7 @@ interface CreateBaseResponse {
 async function main(): Promise<void> {
   const timestamp = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
   console.log("Creating Airtable base...");
-  const result = await apiRequest<CreateBaseResponse>("POST", "/v0/meta/bases", buildSchema(timestamp));
+  const result = await apiRequest<CreateBaseResponse>("POST", "/v0/meta/bases", buildSchema(timestamp, WORKSPACE_ID));
   console.log("\n\u2713 Base created successfully\n");
   console.log(`Base name: ${result.name}`);
   console.log(`Base ID:   ${result.id}`);

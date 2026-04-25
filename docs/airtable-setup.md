@@ -110,18 +110,20 @@ Run the automated setup script to create the base and all fields programmaticall
 ### Prerequisites
 - Node.js 18+ installed
 - An Airtable account with a Personal Access Token that has `schema.bases:write` and `data.records:write` scopes
+- Find your workspace ID at airtable.com — click your workspace in the sidebar, the URL is `https://airtable.com/<workspaceId>` and the ID starts with `wsp`.
 
 ### Run the script
 ```bash
 # 1. Copy the example env file
 cp .env.example .env
 
-# 2. Fill in your Airtable API key
+# 2. Fill in your Airtable API key and workspace ID
 # Edit .env and set:
 #   AIRTABLE_API_KEY=your_token_here
+#   AIRTABLE_WORKSPACE_ID=wsp...
 
 # 3. Run the script
-npx ts-node scripts/airtable-setup.ts
+AIRTABLE_WORKSPACE_ID=wsp... AIRTABLE_API_KEY=pat... npx ts-node scripts/airtable-setup.ts
 ```
 
 The script will:
